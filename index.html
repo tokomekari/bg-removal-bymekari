@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tokomekari Logo Remove Background</title>
+  <meta name="description" content="Hapus latar belakang logo & foto (JPG, JPEG, PNG, PDF) dengan rapi langsung di browser. Hasil akhir: PNG transparan." />
+  <meta name="color-scheme" content="light" />
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="%236C5CE7"/><stop offset="1" stop-color="%2300B894"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(%23g)"/><text x="32" y="44" font-family="Arial,sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="white">T</text></svg>' />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- PDF.js (hanya dipakai saat pengguna membuka file PDF) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="js/remove-bg.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" width="44" height="44" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#6C5CE7"/>
+            <stop offset="1" stop-color="#00B894"/>
+          </linearGradient>
+        </defs>
+        <rect width="64" height="64" rx="14" fill="url(#lg)"/>
+        <text x="32" y="44" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#fff">T</text>
+      </svg>
+      <div class="brand-text">
+        <h1>Tokomekari <span>Logo Remove Background</span></h1>
+      </div>
+    </div>
+    <div class="badge" title="File Anda tidak diunggah ke server mana pun">🔒 100% diproses di browser</div>
+  </header>
+
+  <main class="container">
+
+    <!-- ============ KARTU UNGGAH ============ -->
+    <section id="uploadSection" class="card upload-card">
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Pilih atau letakkan file">
+        <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <h2>Seret &amp; letakkan file di sini</h2>
+        <p class="muted">atau</p>
+        <span class="btn primary">📁 Pilih File</span>
+        <p class="muted small">JPG • JPEG • PNG • PDF &nbsp;—&nbsp; gambar juga bisa ditempel (Ctrl+V)</p>
+      </div>
+      <input id="fileInput" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" hidden />
+      <button id="btnSample" class="btn link" type="button">✨ Coba dengan gambar contoh</button>
+    </section>
+
+    <!-- ============ AREA EDITOR ============ -->
+    <section id="editorSection" hidden>
+      <div class="card">
+        <p id="fileMeta" class="file-meta"></p>
+
+        <div class="controls">
+          <div class="control-group">
+            <span class="control-label">Mode penghapusan</span>
+            <div class="modes" role="radiogroup" aria-label="Mode penghapusan">
+              <label class="pill">
+                <input type="radio" name="mode" value="auto" checked />
+                <span>🎯 Warna Latar Otomatis</span>
+              </label>
+              <label class="pill">
+                <input type="radio" name="mode" value="wand" />
+                <span>🖱️ Klik Warna</span>
+              </label>
+              <label class="pill">
+                <input type="radio" name="mode" value="ai" />
+                <span>✨ AI Online (paling rapi)</span>
+              </label>
+            </div>
+            <p id="wandHint" class="hint" hidden>Klik warna latar pada gambar <b>Asli</b> (kiri) untuk menghapusnya.</p>
+            <p id="aiNote" class="hint" hidden>Mode AI memerlukan internet. Model (~40&nbsp;MB) diunduh sekali lalu di-cache browser. Jika gagal, gunakan mode offline.</p>
+          </div>
+
+          <div id="sliderBox" class="control-group sliders">
+            <label for="tolRange">
+              Sensitivitas warna <output id="tolVal">24</output>
+              <input type="range" id="tolRange" min="0" max="100" value="24" />
+            </label>
+            <label for="featherRange">
+              Kehalusan tepi <output id="featherVal">1</output>
+              <input type="range" id="featherRange" min="0" max="4" step="1" value="1" />
+            </label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnProcess" class="btn primary" type="button">🪄 Hapus Latar</button>
+          <button id="btnReset" class="btn ghost" type="button" disabled>↩︎ Atur Ulang</button>
+          <button id="btnNew" class="btn ghost" type="button">🗂 Gambar Baru</button>
+          <span class="spacer"></span>
+          <button id="btnDownload" class="btn success" type="button" disabled>⬇️ Unduh PNG</button>
+        </div>
+
+        <div id="pdfBar" class="pdfbar" hidden>
+          <label for="pdfPage">Halaman PDF:</label>
+          <select id="pdfPage"></select>
+        </div>
+
+        <div class="stage-tools">
+          <label for="zoomSelect">Zoom:</label>
+          <select id="zoomSelect">
+            <option value="fit" selected>Muat layar</option>
+            <option value="0.25">25%</option>
+            <option value="0.5">50%</option>
+            <option value="1">100%</option>
+            <option value="2">200%</option>
+          </select>
+        </div>
+
+        <section class="stage">
+          <figure>
+            <figcaption>Asli</figcaption>
+            <div class="canvas-wrap plain">
+              <canvas id="origCanvas"></canvas>
+            </div>
+          </figure>
+          <figure>
+            <figcaption>Hasil — PNG Transparan</figcaption>
+            <div class="canvas-wrap checker">
+              <p id="resPlaceholder" class="placeholder">Hasil akan tampil di sini</p>
+              <canvas id="resCanvas"></canvas>
+            </div>
+          </figure>
+        </section>
+
+        <div id="status" class="status info" hidden>
+          <span id="spinner" class="spinner" hidden></span>
+          <span id="statusText"></span>
+        </div>
+        <div id="progressWrap" class="progress" hidden>
+          <div id="progressBar"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Tokomekari — Hapus latar logo dengan rapi, langsung dari browser Anda.</p>
+  </footer>
+
+</body>
+</html>

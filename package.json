@@ -1,0 +1,17 @@
+{
+  "name": "tokomekari-logo-remove-background",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Website untuk menghapus latar belakang logo & foto (JPG/JPEG/PNG/PDF) menjadi PNG transparan — 100% di browser.",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node test/remove-bg.test.js"
+  },
+  "keywords": [
+    "remove-background",
+    "png-transparan",
+    "logo",
+    "tokomekari"
+  ],
+  "license": "MIT"
+}
